@@ -1,0 +1,271 @@
+/* ─── FONTS ───────────────────────────────────────────── */
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500;600&display=swap");
+
+/* ─── GLOBAL RESET ────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ─── THEME VARIABLES ─────────────────────────────────── */
+:root {
+  --cream: #f8f4ee;
+  --ivory: #f2ede4;
+
+  --wine: #6b1f2a;
+  --wine-dark: #4a1219;
+  --wine-mid: #8b2e3d;
+
+  --gold: #c4974a;
+  --gold-soft: #d4aa6a;
+  --gold-pale: #edd9a3;
+
+  --black: #1a1108;
+  --charcoal: #2c2318;
+  --muted: #7a6a5a;
+
+  --border: rgba(196, 151, 74, 0.25);
+  --border-hover: rgba(196, 151, 74, 0.55);
+
+  --shadow: 0 4px 24px rgba(26, 17, 8, 0.1);
+  --shadow-lg: 0 12px 48px rgba(26, 17, 8, 0.16);
+
+  --radius: 2px;
+  --radius-md: 6px;
+
+  --serif: "Cormorant Garamond", Georgia, serif;
+  --sans: "Jost", system-ui, sans-serif;
+
+  --transition: all 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─── BASE ────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--sans);
+  background: var(--cream);
+  color: var(--black);
+  line-height: 1.6;
+}
+
+/* ─── INPUT FIX ───────────────────────────────────────── */
+input,
+textarea,
+select {
+  color: var(--black);
+  background: #fff;
+}
+
+input::placeholder {
+  color: var(--muted);
+}
+
+/* ─── BUTTONS ─────────────────────────────────────────── */
+.btn-primary,
+.btn-gold,
+.btn-outline,
+.btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 1.6px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: var(--transition);
+  border-radius: var(--radius);
+  text-decoration: none;
+}
+
+.btn-primary {
+  padding: 11px 28px;
+  background: var(--wine);
+  color: var(--gold-pale);
+  border: 1px solid var(--wine);
+}
+
+.btn-primary:hover {
+  background: var(--wine-dark);
+  border-color: var(--wine-dark);
+  transform: translateY(-1px);
+}
+
+.btn-gold {
+  padding: 11px 28px;
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+}
+
+.btn-gold:hover {
+  background: var(--gold);
+  color: var(--black);
+}
+
+.btn-outline {
+  padding: 9px 20px;
+  background: transparent;
+  color: var(--charcoal);
+  border: 1px solid rgba(26, 17, 8, 0.22);
+}
+
+.btn-outline:hover {
+  border-color: var(--wine);
+  color: var(--wine);
+}
+
+.btn-danger {
+  padding: 8px 16px;
+  background: transparent;
+  color: #c0392b;
+  border: 1px solid #c0392b;
+}
+
+.btn-danger:hover {
+  background: #c0392b;
+  color: #fff;
+}
+
+/* ─── FORM FIELDS ─────────────────────────────────────── */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+
+.field label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.field input,
+.field textarea,
+.field select {
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--sans);
+  font-size: 14px;
+  outline: none;
+  transition: var(--transition);
+}
+
+.field input:focus,
+.field textarea:focus,
+.field select:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(196, 151, 74, 0.12);
+}
+
+/* ─── CARDS ───────────────────────────────────────────── */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  transition: var(--transition);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-hover);
+}
+
+/* ─── BADGES ──────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  border-radius: 20px;
+}
+
+.badge-wine {
+  background: rgba(107, 31, 42, 0.1);
+  color: var(--wine-mid);
+}
+
+.badge-gold {
+  background: rgba(196, 151, 74, 0.15);
+  color: #8a6a28;
+}
+
+.badge-green {
+  background: rgba(34, 120, 70, 0.1);
+  color: #216b47;
+}
+
+/* ─── TOAST ───────────────────────────────────────────── */
+.toast {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  z-index: 9999;
+  padding: 14px 22px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.3s ease;
+}
+
+.toast-success {
+  background: var(--wine);
+  color: var(--gold-pale);
+}
+
+.toast-error {
+  background: var(--black);
+  color: #fff;
+}
+
+/* ─── ANIMATIONS ──────────────────────────────────────── */
+.page-enter {
+  animation: pageIn 0.35s ease;
+}
+
+@keyframes pageIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── HELPERS ─────────────────────────────────────────── */
+.text-serif {
+  font-family: var(--serif);
+}
+
+.text-muted {
+  color: var(--muted);
+}
