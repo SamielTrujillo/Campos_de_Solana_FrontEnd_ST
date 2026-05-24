@@ -1,97 +1,116 @@
-// ─── CATALOG PAGE ────────────────────────────────────────────────────────────
+// Página de catálogo
 import { useState } from "react";
-
 import WineCard from "../components/WineCard";
 
 export default function CatalogPage({
   wines,
   onAddToCart,
   onBuy,
-  showToast,
   currentUser,
   setPage,
 }) {
-  // Language state
   const [language, setLanguage] = useState("es");
-
-  // Category filter state
   const [filter, setFilter] = useState("Todos");
-
-  // Search input state
   const [search, setSearch] = useState("");
 
-  // Category options
+  const wineList = Array.isArray(wines) ? wines : [];
+
   const categories = [
     "Todos",
     "Destacados",
-    ...Array.from(new Set(wines.map((wine) => wine.category))),
+    ...Array.from(new Set(wineList.map((wine) => wine.category))),
   ];
 
-  // HU18 + HU22: filter wines by category, featured status, name, or region
-  const filteredWines = wines.filter((wine) => {
+  const getCategoryLabel = (category) => {
+    if (language === "es") return category;
+
+    if (category === "Todos") return "All";
+    if (category === "Destacados") return "Featured";
+    if (category === "Tinto") return "Red";
+    if (category === "Blanco") return "White";
+    if (category === "Dulce") return "Sweet";
+    if (category === "Rosé") return "Rosé";
+
+    return category;
+  };
+
+  const filteredWines = wineList.filter((wine) => {
+    const text = search.trim().toLowerCase();
+
+    const name = wine.name?.toLowerCase() || "";
+    const region = wine.region?.toLowerCase() || "";
+    const category = wine.category?.toLowerCase() || "";
+    const tags = Array.isArray(wine.tags) ? wine.tags : [];
+
     const matchesCategory =
       filter === "Todos" ||
       wine.category === filter ||
       (filter === "Destacados" && wine.featured);
 
     const matchesSearch =
-      wine.name.toLowerCase().includes(search.toLowerCase()) ||
-      wine.region.toLowerCase().includes(search.toLowerCase()) ||
-      wine.category.toLowerCase().includes(search.toLowerCase());
+      text === "" ||
+      name.includes(text) ||
+      region.includes(text) ||
+      category.includes(text) ||
+      tags.some((tag) => tag.toLowerCase().includes(text));
 
     return matchesCategory && matchesSearch;
   });
 
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setSearch((currentSearch) => currentSearch.trim());
+  };
+
+  const clearSearch = () => {
+    setSearch("");
+  };
+
+  const resultText =
+    language === "es"
+      ? `${filteredWines.length} vino(s) encontrado(s)`
+      : `${filteredWines.length} wine(s) found`;
+
   return (
     <div
-      className="page-enter"
+      className="page-enter catalog-page"
       style={{
         padding: "32px 40px 70px",
         maxWidth: 1280,
         margin: "0 auto",
       }}
     >
-      {/* Top actions */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 55,
-        }}
-      >
-        {/* Back button */}
+      {/* Acciones superiores */}
+      <div className="page-actions">
         <button
-          className="btn-outline"
+          type="button"
+          className="btn-back"
           onClick={() => setPage("home")}
         >
-          ← {language === "es" ? "Volver" : "Back"}
+          <span className="btn-back-icon">←</span>
+          {language === "es" ? "Volver" : "Back"}
         </button>
 
-        {/* Language button */}
         <button
-          className="btn-outline"
+          type="button"
+          className="btn-lang"
           onClick={() => setLanguage(language === "es" ? "en" : "es")}
         >
           {language === "es" ? "EN" : "ES"}
         </button>
       </div>
 
-      {/* Header */}
-      <div
-        style={{
-          textAlign: "center",
-          marginBottom: 48,
-        }}
-      >
+      {/* Encabezado */}
+      <section className="catalog-header">
         <div
           style={{
             fontFamily: "var(--sans)",
-            fontSize: 9,
-            letterSpacing: 5,
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: 6,
             color: "var(--gold)",
             textTransform: "uppercase",
-            marginBottom: 12,
+            marginBottom: 14,
           }}
         >
           {language === "es" ? "Nuestra selección" : "Our Selection"}
@@ -100,8 +119,10 @@ export default function CatalogPage({
         <h1
           style={{
             fontFamily: "var(--serif)",
-            fontSize: 52,
-            fontWeight: 300,
+            fontSize: "clamp(48px, 6vw, 78px)",
+            lineHeight: 0.95,
+            letterSpacing: -1,
+            fontWeight: 400,
             color: "var(--black)",
           }}
         >
@@ -110,123 +131,166 @@ export default function CatalogPage({
 
         <div
           style={{
-            width: 60,
+            width: 68,
             height: 1,
             background: "var(--gold)",
-            margin: "18px auto 0",
+            margin: "22px auto 0",
           }}
         />
-      </div>
+      </section>
 
-      {/* Filters */}
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          justifyContent: "center",
-          flexWrap: "wrap",
-          marginBottom: 28,
-        }}
-      >
-        {categories.map((category) => (
+      {/* Filtros */}
+      <section className="catalog-filters">
+        {categories.map((category) => {
+          const active = filter === category;
+
+          return (
+            <button
+              key={category}
+              type="button"
+              onClick={() => setFilter(category)}
+              style={{
+                padding: "13px 30px",
+                border: "1px solid",
+                borderRadius: "var(--radius-md)",
+                fontFamily: "var(--sans)",
+                fontSize: 12,
+                fontWeight: 700,
+                letterSpacing: 2.2,
+                textTransform: "uppercase",
+                cursor: "pointer",
+                transition: "var(--transition)",
+                background: active ? "var(--wine)" : "#fff",
+                borderColor: active ? "var(--wine)" : "var(--border)",
+                color: active ? "var(--gold-light)" : "var(--muted)",
+                boxShadow: active
+                  ? "0 10px 26px rgba(107, 31, 42, 0.18)"
+                  : "none",
+              }}
+              onMouseEnter={(e) => {
+                if (!active) {
+                  e.currentTarget.style.borderColor = "var(--wine)";
+                  e.currentTarget.style.color = "var(--wine)";
+                  e.currentTarget.style.transform = "translateY(-2px)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!active) {
+                  e.currentTarget.style.borderColor = "var(--border)";
+                  e.currentTarget.style.color = "var(--muted)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                }
+              }}
+            >
+              {getCategoryLabel(category)}
+            </button>
+          );
+        })}
+      </section>
+
+      {/* Buscador */}
+      <form className="catalog-search-wrap" onSubmit={handleSearchSubmit}>
+        <div className="catalog-search">
+          <input
+            type="text"
+            className="catalog-search-input"
+            placeholder={
+              language === "es"
+                ? "Buscar por nombre, categoría, región o etiqueta..."
+                : "Search by name, category, region or tag..."
+            }
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          {search.trim() !== "" && (
+            <button
+              type="button"
+              className="catalog-search-clear"
+              onClick={clearSearch}
+              title={language === "es" ? "Limpiar búsqueda" : "Clear search"}
+              aria-label={
+                language === "es" ? "Limpiar búsqueda" : "Clear search"
+              }
+            >
+              ×
+            </button>
+          )}
+
           <button
-            key={category}
-            onClick={() => setFilter(category)}
-            style={{
-              padding: "9px 22px",
-              border: "1px solid",
-              borderRadius: "var(--radius)",
-              fontFamily: "var(--sans)",
-              fontSize: 11,
-              letterSpacing: 1.5,
-              textTransform: "uppercase",
-              cursor: "pointer",
-              transition: "var(--trans)",
-              background: filter === category ? "var(--wine)" : "transparent",
-              borderColor:
-                filter === category ? "var(--wine)" : "var(--border)",
-              color:
-                filter === category ? "var(--gold-pale)" : "var(--muted)",
-            }}
+            type="submit"
+            className="catalog-search-button"
+            title={language === "es" ? "Buscar" : "Search"}
+            aria-label={language === "es" ? "Buscar" : "Search"}
           >
-            {language === "es"
-              ? category
-              : category === "Todos"
-              ? "All"
-              : category === "Destacados"
-              ? "Featured"
-              : category}
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                cx="11"
+                cy="11"
+                r="6.5"
+                stroke="currentColor"
+                strokeWidth="1.8"
+              />
+              <path
+                d="M16 16L21 21"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                strokeLinecap="round"
+              />
+            </svg>
           </button>
-        ))}
-      </div>
+        </div>
+      </form>
 
-      {/* Search */}
-      <div
-        style={{
-          maxWidth: 430,
-          margin: "0 auto 55px",
-          position: "relative",
-        }}
-      >
-        <span
-          style={{
-            position: "absolute",
-            left: 16,
-            top: "50%",
-            transform: "translateY(-50%)",
-            color: "var(--muted)",
-            fontSize: 14,
-          }}
-        >
-          🔍
-        </span>
+      {/* Contador de resultados */}
+      <div className="catalog-results">{resultText}</div>
 
-        <input
-          placeholder={
-            language === "es"
-              ? "Buscar por nombre, categoría o región..."
-              : "Search by name, category or region..."
-          }
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          style={{
-            width: "100%",
-            padding: "13px 16px 13px 42px",
-            border: "1px solid var(--border)",
-            borderRadius: "var(--radius-md)",
-            fontFamily: "var(--sans)",
-            fontSize: 14,
-            outline: "none",
-            transition: "var(--trans)",
-            background: "#fff",
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = "var(--gold)";
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = "var(--border)";
-          }}
-        />
-      </div>
-
-      {/* Wine grid */}
+      {/* Lista de vinos */}
       {filteredWines.length === 0 ? (
-        <div
+        <section
+          className="card"
           style={{
             textAlign: "center",
-            padding: "70px 0",
+            padding: "60px 24px",
             color: "var(--muted)",
-            fontFamily: "var(--serif)",
-            fontSize: 24,
-            fontStyle: "italic",
           }}
         >
-          {language === "es"
-            ? "No se encontraron vinos con ese criterio."
-            : "No wines were found with that criteria."}
-        </div>
+          <div
+            style={{
+              fontSize: 42,
+              opacity: 0.3,
+              marginBottom: 12,
+            }}
+          >
+            🍷
+          </div>
+
+          <h2
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: 32,
+              fontWeight: 400,
+              color: "var(--wine)",
+              marginBottom: 8,
+            }}
+          >
+            {language === "es" ? "No encontramos vinos" : "No wines found"}
+          </h2>
+
+          <p>
+            {language === "es"
+              ? "Intenta cambiar el filtro o buscar con otro criterio."
+              : "Try changing the filter or searching with another keyword."}
+          </p>
+        </section>
       ) : (
-        <div
+        <section
           style={{
             display: "grid",
             gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
@@ -239,12 +303,11 @@ export default function CatalogPage({
               wine={wine}
               onAddToCart={onAddToCart}
               onBuy={onBuy}
-              showToast={showToast}
               currentUser={currentUser}
               setPage={setPage}
             />
           ))}
-        </div>
+        </section>
       )}
     </div>
   );

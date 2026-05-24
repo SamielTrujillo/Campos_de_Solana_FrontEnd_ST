@@ -5,7 +5,7 @@ export default function HistoryPage({
   onUpdateOrderStatus,
   ORDER_STATUS,
 }) {
-  // Colores y estilos visuales de cada estado
+  // Colores y estilos visuales de cada estado.
   const getStatusStyle = (status) => {
     switch (status) {
       case ORDER_STATUS.PENDING:
@@ -66,7 +66,7 @@ export default function HistoryPage({
     }
   };
 
-  // Flujo visual del pedido
+  // Flujo visual del pedido.
   const statusSteps = [
     ORDER_STATUS.PENDING,
     ORDER_STATUS.CONFIRMED,
@@ -79,7 +79,10 @@ export default function HistoryPage({
     return statusSteps.indexOf(status);
   };
 
+  // Formatea fechas para mostrarlas de manera más legible.
   const formatDate = (date) => {
+    if (!date) return "No definido";
+
     return new Date(date).toLocaleDateString("es-ES", {
       year: "numeric",
       month: "long",
@@ -87,7 +90,7 @@ export default function HistoryPage({
     });
   };
 
-  // Renderiza botones dinámicos según el estado actual
+  // Renderiza botones dinámicos según el estado actual.
   const renderActions = (order) => {
     switch (order.status) {
       case ORDER_STATUS.PENDING:
@@ -96,10 +99,7 @@ export default function HistoryPage({
             <button
               className="btn-primary"
               onClick={() =>
-                onUpdateOrderStatus(
-                  order.id,
-                  ORDER_STATUS.CONFIRMED
-                )
+                onUpdateOrderStatus(order.id, ORDER_STATUS.CONFIRMED)
               }
             >
               Confirmar pedido
@@ -108,10 +108,7 @@ export default function HistoryPage({
             <button
               className="btn-danger"
               onClick={() =>
-                onUpdateOrderStatus(
-                  order.id,
-                  ORDER_STATUS.CANCELLED
-                )
+                onUpdateOrderStatus(order.id, ORDER_STATUS.CANCELLED)
               }
             >
               Cancelar pedido
@@ -125,10 +122,7 @@ export default function HistoryPage({
             <button
               className="btn-primary"
               onClick={() =>
-                onUpdateOrderStatus(
-                  order.id,
-                  ORDER_STATUS.PREPARING
-                )
+                onUpdateOrderStatus(order.id, ORDER_STATUS.PREPARING)
               }
             >
               Preparar pedido
@@ -137,10 +131,7 @@ export default function HistoryPage({
             <button
               className="btn-danger"
               onClick={() =>
-                onUpdateOrderStatus(
-                  order.id,
-                  ORDER_STATUS.CANCELLED
-                )
+                onUpdateOrderStatus(order.id, ORDER_STATUS.CANCELLED)
               }
             >
               Cancelar pedido
@@ -153,10 +144,7 @@ export default function HistoryPage({
           <button
             className="btn-primary"
             onClick={() =>
-              onUpdateOrderStatus(
-                order.id,
-                ORDER_STATUS.SHIPPING
-              )
+              onUpdateOrderStatus(order.id, ORDER_STATUS.SHIPPING)
             }
           >
             Enviar pedido
@@ -168,10 +156,7 @@ export default function HistoryPage({
           <button
             className="btn-primary"
             onClick={() =>
-              onUpdateOrderStatus(
-                order.id,
-                ORDER_STATUS.DELIVERED
-              )
+              onUpdateOrderStatus(order.id, ORDER_STATUS.DELIVERED)
             }
           >
             Marcar como entregado
@@ -226,8 +211,8 @@ export default function HistoryPage({
             maxWidth: 620,
           }}
         >
-          Consulta tus compras realizadas, revisa productos y
-          realiza seguimiento del estado actual de cada pedido.
+          Consulta tus compras realizadas, revisa productos y realiza seguimiento
+          del estado actual de cada pedido.
         </p>
       </div>
 
@@ -276,9 +261,8 @@ export default function HistoryPage({
           {orders.map((order) => {
             const statusStyle = getStatusStyle(order.status);
             const statusIndex = getStatusIndex(order.status);
-
-            const isCancelled =
-              order.status === ORDER_STATUS.CANCELLED;
+            const isCancelled = order.status === ORDER_STATUS.CANCELLED;
+            const delivery = order.delivery || {};
 
             return (
               <div
@@ -289,7 +273,7 @@ export default function HistoryPage({
                   opacity: isCancelled ? 0.7 : 1,
                 }}
               >
-                {/* Top */}
+                {/* Información principal del pedido */}
                 <div
                   style={{
                     display: "flex",
@@ -331,7 +315,7 @@ export default function HistoryPage({
                         marginTop: 4,
                       }}
                     >
-                      {formatDate(order.date)} ·{" "}
+                      Pedido realizado: {formatDate(order.date)} ·{" "}
                       {order.items.length} producto(s)
                     </p>
                   </div>
@@ -351,7 +335,48 @@ export default function HistoryPage({
                   </span>
                 </div>
 
-                {/* Productos */}
+                {/* Datos de entrega capturados desde el carrito */}
+                {order.delivery && (
+                  <div
+                    style={{
+                      borderTop: "1px solid var(--border)",
+                      paddingTop: 16,
+                      marginBottom: 18,
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+                      gap: 12,
+                    }}
+                  >
+                    <InfoItem
+                      label="Fecha de entrega"
+                      value={formatDate(delivery.deliveryDate)}
+                    />
+
+                    <InfoItem
+                      label="Departamento"
+                      value={delivery.department}
+                    />
+
+                    <InfoItem
+                      label="Dirección"
+                      value={delivery.address}
+                    />
+
+                    <InfoItem
+                      label="Teléfono"
+                      value={delivery.contactPhone || "No definido"}
+                    />
+
+                    {delivery.reference && (
+                      <InfoItem
+                        label="Referencia"
+                        value={delivery.reference}
+                      />
+                    )}
+                  </div>
+                )}
+
+                {/* Productos del pedido */}
                 <div
                   style={{
                     borderTop: "1px solid var(--border)",
@@ -364,7 +389,7 @@ export default function HistoryPage({
                 >
                   {order.items.map((item) => (
                     <div
-                      key={item.name}
+                      key={`${order.id}-${item.id}`}
                       style={{
                         display: "flex",
                         justifyContent: "space-between",
@@ -380,14 +405,12 @@ export default function HistoryPage({
                         </span>
                       </span>
 
-                      <span>
-                        ${item.price.toFixed(2)}
-                      </span>
+                      <span>Bs {(item.price * item.qty).toFixed(2)}</span>
                     </div>
                   ))}
                 </div>
 
-                {/* Total */}
+                {/* Total del pedido */}
                 <div
                   style={{
                     display: "flex",
@@ -416,24 +439,22 @@ export default function HistoryPage({
                       color: "var(--wine)",
                     }}
                   >
-                    ${order.total.toFixed(2)}
+                    Bs {order.total.toFixed(2)}
                   </span>
                 </div>
 
-                {/* Timeline */}
+                {/* Línea visual de avance del pedido */}
                 {!isCancelled && (
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns:
-                        "repeat(5, 1fr)",
+                      gridTemplateColumns: "repeat(5, 1fr)",
                       gap: 10,
                       marginBottom: 22,
                     }}
                   >
                     {statusSteps.map((step, index) => {
-                      const isActive =
-                        index <= statusIndex;
+                      const isActive = index <= statusIndex;
 
                       return (
                         <div
@@ -445,8 +466,7 @@ export default function HistoryPage({
                             background: isActive
                               ? "var(--gold)"
                               : "var(--ivory)",
-                            border:
-                              "1px solid var(--border)",
+                            border: "1px solid var(--border)",
                           }}
                         />
                       );
@@ -454,7 +474,7 @@ export default function HistoryPage({
                   </div>
                 )}
 
-                {/* Acciones */}
+                {/* Acciones para simular el cambio de estado del pedido */}
                 <div
                   style={{
                     display: "flex",
@@ -469,6 +489,35 @@ export default function HistoryPage({
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+// Componente pequeño para mostrar datos del pedido de forma ordenada.
+function InfoItem({ label, value }) {
+  return (
+    <div>
+      <p
+        style={{
+          fontSize: 10,
+          letterSpacing: 1.3,
+          textTransform: "uppercase",
+          color: "var(--muted)",
+          marginBottom: 4,
+        }}
+      >
+        {label}
+      </p>
+
+      <p
+        style={{
+          fontSize: 13,
+          color: "var(--charcoal)",
+          lineHeight: 1.5,
+        }}
+      >
+        {value || "No definido"}
+      </p>
     </div>
   );
 }

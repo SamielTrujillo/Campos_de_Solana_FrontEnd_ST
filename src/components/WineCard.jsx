@@ -1,249 +1,422 @@
 import { useState } from "react";
+import AgeVerificationModal from "./AgeVerificationModal";
+import LoginRequiredModal from "./LoginRequiredModal";
 
 export default function WineCard({
   wine,
   onAddToCart,
   onBuy,
+  currentUser,
+  setPage,
 }) {
-  // Estado visual para animar la tarjeta cuando el usuario pasa el mouse.
   const [hover, setHover] = useState(false);
+  const [ageModal, setAgeModal] = useState({
+    open: false,
+    action: null,
+  });
 
-  // HU6 - Disponibilidad de vinos:
-  // Si el stock es 0, el vino se marca como agotado y se bloquean las acciones.
-  const isOutOfStock = wine.stock === 0;
+  const [loginModalOpen, setLoginModalOpen] = useState(false);
+
+  const stock = Number(wine?.stock) || 0;
+  const price = Number(wine?.price) || 0;
+
+  const tags = Array.isArray(wine?.tags)
+    ? wine.tags.slice(0, 2)
+    : [];
+
+  const isOutOfStock = stock <= 0;
+
+  const openActionFlow = (action) => {
+    if (isOutOfStock) return;
+
+    if (!currentUser) {
+      setLoginModalOpen(true);
+      return;
+    }
+
+    setAgeModal({
+      open: true,
+      action,
+    });
+  };
+
+  const closeAgeModal = () => {
+    setAgeModal({
+      open: false,
+      action: null,
+    });
+  };
+
+  const closeLoginModal = () => {
+    setLoginModalOpen(false);
+  };
+
+  const confirmAge = () => {
+    if (ageModal.action === "cart" && typeof onAddToCart === "function") {
+      onAddToCart(wine);
+    }
+
+    if (ageModal.action === "buy" && typeof onBuy === "function") {
+      onBuy(wine);
+    }
+
+    closeAgeModal();
+  };
+
+  const goToLogin = () => {
+    closeLoginModal();
+    setPage("login");
+  };
+
+  const goToRegister = () => {
+    closeLoginModal();
+    setPage("register");
+  };
 
   return (
-    <div
-      className="card"
-      style={{
-        overflow: "hidden",
-        display: "flex",
-        flexDirection: "column",
-        opacity: isOutOfStock ? 0.7 : 1,
-        transform: hover ? "translateY(-6px)" : "none",
-        transition: "var(--transition)",
-        boxShadow: hover
-          ? "0 20px 40px rgba(0,0,0,0.18)"
-          : "0 6px 16px rgba(0,0,0,0.06)",
-      }}
-      onMouseEnter={() => setHover(true)}
-      onMouseLeave={() => setHover(false)}
-    >
-      {/* Imagen del vino */}
-      <div
+    <>
+      <article
+        className="card"
         style={{
-          background:
-            "linear-gradient(135deg, var(--wine-dark) 0%, var(--wine) 100%)",
+          overflow: "hidden",
           display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          padding: "28px 24px",
+          flexDirection: "column",
+          opacity: isOutOfStock ? 0.7 : 1,
+          transform: hover && !isOutOfStock ? "translateY(-5px)" : "none",
+          transition: "var(--transition)",
+          boxShadow:
+            hover && !isOutOfStock
+              ? "0 18px 34px rgba(0,0,0,0.14)"
+              : "0 4px 14px rgba(0,0,0,0.05)",
           position: "relative",
-          minHeight: 340,
+          background: "#fff",
         }}
+        onMouseEnter={() => setHover(true)}
+        onMouseLeave={() => setHover(false)}
       >
-        {/* Año del vino */}
-        <div style={{ position: "absolute", top: 14, right: 14 }}>
-          <span
-            className="badge"
+        {isOutOfStock && (
+          <div
+            aria-hidden="true"
             style={{
-              background: "rgba(196,151,74,0.25)",
-              color: "var(--gold-soft)",
-              fontSize: 10,
-              letterSpacing: 1.5,
+              position: "absolute",
+              inset: 0,
+              background: "rgba(255,255,255,0.22)",
+              zIndex: 5,
+              pointerEvents: "none",
             }}
-          >
-            {wine.year}
-          </span>
-        </div>
-
-        {/* HU22 - Vinos destacados */}
-        {wine.featured && (
-          <div style={{ position: "absolute", top: 14, left: 14 }}>
-            <span className="badge badge-gold">Destacado</span>
-          </div>
+          />
         )}
 
+        {/* Imagen */}
         <div
           style={{
-            width: "100%",
-            height: 260,
+            background:
+              "linear-gradient(135deg, var(--wine-dark) 0%, var(--wine) 100%)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
+            padding: "18px 20px",
             position: "relative",
+            minHeight: 280,
           }}
         >
+          {/* Año */}
           <div
             style={{
               position: "absolute",
-              bottom: 12,
-              width: 90,
-              height: 16,
-              borderRadius: "50%",
-              background: "rgba(0,0,0,0.28)",
-              filter: "blur(10px)",
-            }}
-          />
-
-          <img
-            src={wine.image}
-            alt={wine.name}
-            style={{
-              maxHeight: 230,
-              width: "auto",
-              objectFit: "contain",
-              filter: "drop-shadow(0 18px 28px rgba(0,0,0,0.38))",
-              transition: "var(--transition)",
-              transform: hover ? "scale(1.08)" : "scale(1)",
-              position: "relative",
-              zIndex: 2,
-            }}
-          />
-        </div>
-      </div>
-
-      {/* Contenido */}
-      <div
-        style={{
-          padding: "24px 24px 20px",
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            gap: 6,
-            flexWrap: "wrap",
-            marginBottom: 12,
-          }}
-        >
-          <span className="badge badge-wine">{wine.category}</span>
-          <span className="badge badge-gold">{wine.region}</span>
-        </div>
-
-        <h3
-          style={{
-            fontFamily: "var(--serif)",
-            fontSize: 24,
-            fontWeight: 400,
-            lineHeight: 1.2,
-            marginBottom: 8,
-            minHeight: 60,
-          }}
-        >
-          {wine.name}
-        </h3>
-
-        <p
-          style={{
-            fontSize: 13,
-            color: "var(--muted)",
-            lineHeight: 1.7,
-            flex: 1,
-            marginBottom: 16,
-            minHeight: 110,
-          }}
-        >
-          {wine.description}
-        </p>
-
-        <div
-          style={{
-            display: "flex",
-            gap: 6,
-            flexWrap: "wrap",
-            marginBottom: 20,
-            minHeight: 36,
-          }}
-        >
-          {wine.tags.map((tag) => (
-            <span
-              key={tag}
-              style={{
-                fontSize: 10,
-                background: "var(--ivory)",
-                border: "1px solid var(--border)",
-                borderRadius: "var(--radius)",
-                padding: "3px 8px",
-                color: "var(--muted)",
-              }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        {/* Precio y stock */}
-        <div
-          style={{
-            borderTop: "1px solid var(--border)",
-            paddingTop: 18,
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 14,
+              top: 14,
+              right: 14,
             }}
           >
             <span
+              className="badge"
               style={{
-                fontFamily: "var(--serif)",
-                fontSize: 30,
-                color: "var(--wine)",
+                background: "rgba(196,151,74,0.22)",
+                color: "var(--gold-soft)",
+                fontSize: 10,
+                letterSpacing: 1.4,
               }}
             >
-              ${wine.price}
-            </span>
-
-            <span
-              style={{
-                fontSize: 11,
-                fontWeight: 500,
-                color: isOutOfStock ? "#b42318" : "var(--muted)",
-              }}
-            >
-              {isOutOfStock ? "Agotado" : `${wine.stock} disponibles`}
+              {wine?.year}
             </span>
           </div>
 
-          {/* Botones */}
-          <div style={{ display: "flex", gap: 10 }}>
-            <button
-              className="btn-outline"
+          {/* Destacado */}
+          {wine?.featured && (
+            <div
               style={{
-                flex: 1,
-                justifyContent: "center",
-                opacity: isOutOfStock ? 0.5 : 1,
-                cursor: isOutOfStock ? "not-allowed" : "pointer",
+                position: "absolute",
+                top: 14,
+                left: 14,
               }}
-              disabled={isOutOfStock}
-              onClick={() => onAddToCart(wine)}
             >
-              {isOutOfStock ? "Agotado" : "Carrito"}
-            </button>
+              <span className="badge badge-gold">
+                Destacado
+              </span>
+            </div>
+          )}
 
-            <button
-              className="btn-primary"
+          <div
+            style={{
+              width: "100%",
+              height: 240,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              position: "relative",
+            }}
+          >
+            {/* sombra */}
+            <div
+              aria-hidden="true"
               style={{
-                flex: 1,
-                justifyContent: "center",
-                opacity: isOutOfStock ? 0.5 : 1,
-                cursor: isOutOfStock ? "not-allowed" : "pointer",
+                position: "absolute",
+                bottom: 8,
+                width: 95,
+                height: 14,
+                borderRadius: "50%",
+                background: "rgba(0,0,0,0.24)",
+                filter: "blur(10px)",
               }}
-              disabled={isOutOfStock}
-              onClick={() => onBuy(wine)}
-            >
-              {isOutOfStock ? "No disponible" : "Comprar"}
-            </button>
+            />
+
+            <img
+              src={wine?.image}
+              alt={wine?.name || "Vino"}
+              style={{
+                maxHeight: 260,
+                width: "auto",
+                objectFit: "contain",
+                filter: "drop-shadow(0 16px 24px rgba(0,0,0,0.34))",
+                transition: "var(--transition)",
+                transform:
+                  hover && !isOutOfStock
+                    ? "scale(1.07)"
+                    : "scale(1)",
+                position: "relative",
+                zIndex: 2,
+              }}
+              onError={(e) => {
+                e.currentTarget.src =
+                  `https://via.placeholder.com/120x220/6B1F2A/FFFFFF?text=${encodeURIComponent(
+                    wine?.name || "Vino"
+                  )}`;
+              }}
+            />
           </div>
         </div>
-      </div>
-    </div>
+
+        {/* Contenido */}
+        <div
+          style={{
+            padding: "18px",
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+          }}
+        >
+          {/* badges */}
+          <div
+            style={{
+              display: "flex",
+              gap: 6,
+              flexWrap: "wrap",
+              marginBottom: 12,
+            }}
+          >
+            <span className="badge badge-wine">
+              {wine?.category}
+            </span>
+
+            <span className="badge badge-gold">
+              {wine?.region}
+            </span>
+
+            {wine?.size && (
+              <span
+                className="badge"
+                style={{
+                  background: "var(--ivory)",
+                  color: "var(--muted)",
+                }}
+              >
+                {wine.size}
+              </span>
+            )}
+          </div>
+
+          {/* titulo */}
+          <h3
+            style={{
+              fontFamily: "var(--serif)",
+              fontSize: 22,
+              fontWeight: 400,
+              lineHeight: 1.2,
+              marginBottom: 10,
+              color: "var(--black)",
+              minHeight: 54,
+            }}
+          >
+            {wine?.name}
+          </h3>
+
+          {/* descripcion */}
+          <p
+            style={{
+              fontSize: 14,
+              color: "var(--muted)",
+              lineHeight: 1.7,
+              marginBottom: 14,
+
+              display: "-webkit-box",
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: "vertical",
+              overflow: "hidden",
+
+              minHeight: 72,
+            }}
+          >
+            {wine?.description}
+          </p>
+
+          {/* tags */}
+          {tags.length > 0 && (
+            <div
+              style={{
+                display: "flex",
+                gap: 6,
+                flexWrap: "wrap",
+                marginBottom: 16,
+              }}
+            >
+              {tags.map((tag) => (
+                <span
+                  key={tag}
+                  style={{
+                    fontSize: 10,
+                    background: "var(--ivory)",
+                    border: "1px solid var(--border)",
+                    borderRadius: "999px",
+                    padding: "5px 10px",
+                    color: "var(--muted)",
+                    letterSpacing: 0.4,
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* footer */}
+          <div
+            style={{
+              borderTop: "1px solid var(--border)",
+              paddingTop: 16,
+              marginTop: "auto",
+            }}
+          >
+            {/* precio y stock */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: 14,
+              }}
+            >
+              <span
+                style={{
+                  fontFamily: "var(--serif)",
+                  fontSize: 30,
+                  color: "var(--wine)",
+                  lineHeight: 1,
+                }}
+              >
+                Bs {price.toFixed(2)}
+              </span>
+
+              <span
+                style={{
+                  fontSize: 14,
+                  fontWeight: 700,
+                  color: isOutOfStock
+                    ? "var(--danger)"
+                    : "var(--wine-dark)",
+                  background: "rgba(107,31,42,0.08)",
+                  padding: "6px 10px",
+                  borderRadius: "999px",
+                }}
+              >
+                {isOutOfStock
+                  ? "Agotado"
+                  : `${stock} disponibles`}
+              </span>
+            </div>
+
+            {/* botones */}
+            <div
+              style={{
+                display: "flex",
+                gap: 10,
+              }}
+            >
+              <button
+                type="button"
+                className="btn-outline"
+                disabled={isOutOfStock}
+                onClick={() => openActionFlow("cart")}
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  opacity: isOutOfStock ? 0.5 : 1,
+                  cursor: isOutOfStock
+                    ? "not-allowed"
+                    : "pointer",
+                  fontSize: 11,
+                  padding: "12px 10px",
+                }}
+              >
+                {isOutOfStock ? "Agotado" : "Añadir"}
+              </button>
+
+              <button
+                type="button"
+                className="btn-primary"
+                disabled={isOutOfStock}
+                onClick={() => openActionFlow("buy")}
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  opacity: isOutOfStock ? 0.5 : 1,
+                  cursor: isOutOfStock
+                    ? "not-allowed"
+                    : "pointer",
+                  fontSize: 11,
+                  padding: "12px 10px",
+                }}
+              >
+                {isOutOfStock
+                  ? "No disponible"
+                  : "Comprar ahora"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <LoginRequiredModal
+        open={loginModalOpen}
+        onCancel={closeLoginModal}
+        onLogin={goToLogin}
+        onRegister={goToRegister}
+      />
+
+      <AgeVerificationModal
+        open={ageModal.open}
+        onCancel={closeAgeModal}
+        onConfirm={confirmAge}
+      />
+    </>
   );
 }

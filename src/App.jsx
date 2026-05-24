@@ -58,6 +58,15 @@ export default function App() {
     }, 3000);
   };
 
+  // Obtiene la fecha mínima permitida para la entrega.
+  // Se usa mañana como fecha mínima para evitar fechas pasadas
+  // o pedidos para el mismo día.
+  const getTomorrowDate = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split("T")[0];
+  };
+
   const handleLogin = (user) => {
     setCurrentUser(user);
 
@@ -81,7 +90,7 @@ export default function App() {
   };
 
   // Agrega un vino al carrito.
-  // Si ya existe, aumenta la cantidad.
+  // Si ya existe, aumenta la cantidad sin superar el stock disponible.
   const addToCart = (wine) => {
     if (wine.stock === 0) {
       showToast("Este producto está agotado", "error");
@@ -132,9 +141,10 @@ export default function App() {
     showToast("Producto eliminado del carrito");
   };
 
+  // Actualiza la cantidad de un producto en el carrito.
+  // No permite cantidades menores a 1 ni superiores al stock disponible.
   const updateQty = (id, qty) => {
     if (qty <= 0) {
-      removeFromCart(id);
       return;
     }
 
@@ -155,7 +165,8 @@ export default function App() {
   // HU9 / HU19:
   // Se simula la confirmación del pedido.
   // El pedido se guarda en localStorage y luego se muestra en el historial.
-  const checkout = () => {
+  // Ahora también recibe los datos de entrega desde CartPage.
+  const checkout = (deliveryData) => {
     if (!currentUser) {
       showToast("Inicia sesión para confirmar tu pedido", "error");
       setPage("login");
@@ -167,15 +178,53 @@ export default function App() {
       return;
     }
 
+    // Valida que el departamento sea obligatorio.
+    if (!deliveryData?.department) {
+      showToast("Selecciona el departamento de entrega", "error");
+      return;
+    }
+
+    // Valida que la dirección sea obligatoria.
+    if (!deliveryData?.address?.trim()) {
+      showToast("Ingresa la dirección de entrega", "error");
+      return;
+    }
+
+    // Valida que la fecha de entrega sea obligatoria.
+    if (!deliveryData?.deliveryDate) {
+      showToast("Selecciona la fecha de entrega", "error");
+      return;
+    }
+
+    // Valida que la fecha de entrega no sea anterior ni igual al día del pedido.
+    if (deliveryData.deliveryDate < getTomorrowDate()) {
+      showToast(
+        "La fecha de entrega debe ser posterior a la fecha del pedido",
+        "error"
+      );
+      return;
+    }
+
     const order = {
       id: Date.now(),
       userId: currentUser.id,
       userName: currentUser.name,
       userEmail: currentUser.email,
+      userPhone: currentUser.phone || "",
       items: cart,
       total: cart.reduce((sum, item) => sum + item.price * item.qty, 0),
       status: ORDER_STATUS.PENDING,
       date: new Date().toISOString(),
+
+      // Datos de entrega capturados desde el carrito.
+      delivery: {
+        department: deliveryData.department,
+        address: deliveryData.address.trim(),
+        deliveryDate: deliveryData.deliveryDate,
+        contactPhone:
+          deliveryData.contactPhone?.trim() || currentUser.phone || "",
+        reference: deliveryData.reference?.trim() || "",
+      },
     };
 
     setOrders((prev) => [...prev, order]);
