@@ -16,6 +16,7 @@ import CatalogPage from "./pages/CatalogPage";
 import CartPage from "./pages/CartPage";
 import HistoryPage from "./pages/HistoryPage";
 import AdminDashboard from "./pages/AdminDashboard";
+import AboutPage from "./pages/AboutPage";
 
 export default function App() {
   const [page, setPage] = useState("home");
@@ -107,7 +108,7 @@ export default function App() {
         }
 
         return prev.map((item) =>
-          item.id === wine.id ? { ...item, qty: item.qty + 1 } : item
+          item.id === wine.id ? { ...item, qty: item.qty + 1 } : item,
         );
       }
 
@@ -158,7 +159,7 @@ export default function App() {
         }
 
         return { ...item, qty };
-      })
+      }),
     );
   };
 
@@ -200,7 +201,7 @@ export default function App() {
     if (deliveryData.deliveryDate < getTomorrowDate()) {
       showToast(
         "La fecha de entrega debe ser posterior a la fecha del pedido",
-        "error"
+        "error",
       );
       return;
     }
@@ -240,8 +241,8 @@ export default function App() {
   const updateOrderStatus = (orderId, newStatus) => {
     setOrders((prev) =>
       prev.map((order) =>
-        order.id === orderId ? { ...order, status: newStatus } : order
-      )
+        order.id === orderId ? { ...order, status: newStatus } : order,
+      ),
     );
 
     showToast(`Estado actualizado a: ${newStatus}`);
@@ -275,6 +276,8 @@ export default function App() {
             setPage={setPage}
           />
         );
+      case "about":
+        return <AboutPage />;
 
       case "cart":
         return (
@@ -322,7 +325,9 @@ export default function App() {
   };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
+    <div
+      style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+    >
       <Navbar
         page={page}
         setPage={setPage}

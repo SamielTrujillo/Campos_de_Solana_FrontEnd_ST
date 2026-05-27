@@ -7,6 +7,7 @@ function Navbar({ page, setPage, currentUser, onLogout, cartCount }) {
   const navItems = [
     { key: "home", label: "Inicio" },
     { key: "catalog", label: "Catálogo" },
+    { key: "about", label: "Nuestra Historia" },
   ];
 
   const isActive = (key) => page === key;
@@ -55,51 +56,49 @@ function Navbar({ page, setPage, currentUser, onLogout, cartCount }) {
       </button>
 
       {/* Navegación central */}
-      {currentUser && (
-        <div
-          style={{
-            display: "flex",
-            gap: 38,
-            alignItems: "center",
-          }}
-        >
-          {navItems.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              onClick={() => setPage(item.key)}
-              style={{
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontFamily: "var(--sans)",
-                fontSize: 12,
-                fontWeight: 600,
-                letterSpacing: 2.6,
-                textTransform: "uppercase",
-                color: isActive(item.key) ? "var(--wine)" : "var(--muted)",
-                transition: "var(--transition)",
-                padding: "10px 0",
-                borderBottom: isActive(item.key)
-                  ? "1px solid var(--wine)"
-                  : "1px solid transparent",
-              }}
-              onMouseEnter={(e) => {
-                if (!isActive(item.key)) {
-                  e.currentTarget.style.color = "var(--wine)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!isActive(item.key)) {
-                  e.currentTarget.style.color = "var(--muted)";
-                }
-              }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      )}
+      <div
+        style={{
+          display: "flex",
+          gap: 38,
+          alignItems: "center",
+        }}
+      >
+        {navItems.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => setPage(item.key)}
+            style={{
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              fontFamily: "var(--sans)",
+              fontSize: 12,
+              fontWeight: 600,
+              letterSpacing: 2.6,
+              textTransform: "uppercase",
+              color: isActive(item.key) ? "var(--wine)" : "var(--muted)",
+              transition: "var(--transition)",
+              padding: "10px 0",
+              borderBottom: isActive(item.key)
+                ? "1px solid var(--wine)"
+                : "1px solid transparent",
+            }}
+            onMouseEnter={(e) => {
+              if (!isActive(item.key)) {
+                e.currentTarget.style.color = "var(--wine)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isActive(item.key)) {
+                e.currentTarget.style.color = "var(--muted)";
+              }
+            }}
+          >
+            {item.label}
+          </button>
+        ))}
+      </div>
 
       {/* Acciones derecha */}
       <div
